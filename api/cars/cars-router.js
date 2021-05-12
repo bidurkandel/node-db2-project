@@ -1,29 +1,53 @@
 // DO YOUR MAGIC
-const router = require('express').Router();
-const Car = require('./cars-model');
-const { checkCarId,
-        checkCarPayload,
-        checkVinNumberUnique,
-        checkVinNumberValid } = require('./cars-middleware');
+const express = require('express');
+const Cars = require('./cars-model');
+const {checkCarId, checkCarPayload, checkVinNumberValid, checkVinNumberUnique} = require('./cars-middleware.js');
+const { json } = require('express');
 
-router.get('/', async (req, res, next) => {
-  try {
-    const cars = await Car.getAll();
-    res.json(cars);
-  } catch(err) { next(err) }
-});
+const router = express.Router()
 
-router.get('/:id', checkCarId, async (req, res, next) => {
-  try {
-    res.json(req.car);
-  } catch(err) { next(err) }
-});
+router.get('/', (req,res, next)=>{
+    Cars.getAll()
+        .then(cars=>{   
+            res.status(200).json(cars)
+        })
+        .catch(next)
+})
 
-router.post('/', checkCarPayload, checkVinNumberValid, checkVinNumberUnique, async (req, res, next) => {
-  try {
-    const newCar = await Car.create(req.body);
-    res.status(201).json(newCar);
-  } catch(err) { next(err) }
-});
+router.get('/:id', checkCarId, (req, res, next) =>{
+    console.log(req.carId)
+    res.status(200).json(req.carId)
+      
+})
 
-module.exports = router;
+router.post('/', checkCarPayload, checkVinNumberValid, checkVinNumberUnique, (req, res, next)=>{
+    Cars.create(req.body)
+        .then(car=>{
+            res.status(201).json(car)
+        })
+        .catch(next)
+})
+
+router.put('/:id', checkCarId, checkCarPayload, (req, res, next)=>{
+    const {id} =req.params
+    const updatedCar = req.body
+    Cars.update(id, updatedCar)
+     .then(car=>{
+         res.status(200).json(car)
+     })
+     .catch(next)
+})
+
+router.delete('/:id', checkCarId, (req, res, next)=>{
+    const {id} = req.params
+    Cars.remove(id)
+     .then(()=>{
+         res.status(200).json({message: 'This car is removed'})
+     })
+     .catch(next)
+})
+
+
+
+
+module.exports = router

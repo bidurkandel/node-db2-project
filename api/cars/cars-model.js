@@ -1,25 +1,37 @@
-const db = require('../../data/db-config');
+const { where } = require('./../../data/db-config.js')
+const db = require('./../../data/db-config.js')
 
 const getAll = () => {
-  return db('cars');
+  // DO YOUR MAGIC
+  return db('cars')
 }
 
 const getById = (id) => {
-  return db('cars').where({ id }).first();
+  // DO YOUR MAGIC
+  return db('cars').where('id', id).first()
 }
 
 const create = async (car) => {
-  await db('cars').insert(car);
-  return db('cars').where('vin', car.vin).first();
+  // DO YOUR MAGIC
+  const [id] = await db('cars').insert(car, ['id', 'vin', 'make', 'model', 'mileage', 'title', 'transmission'])
+  return getById(id)
+} 
+
+const update = async (id, car) =>{
+  await db('cars').where({id}).update(car)
+  return getById(id)
 }
 
-const getByVin = (vin) => {
-  return db('cars').where({ vin }).first();
+const remove = async (id)=>{
+  const toBeRemoved = getById(id)
+  await db('cars').where({id}).del()
+  return toBeRemoved
 }
 
-module.exports = {
+module.exports={
   getAll,
-  getById,
+  getById, 
   create,
-  getByVin
+  update,
+  remove
 }
